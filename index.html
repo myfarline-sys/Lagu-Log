@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Keharmonian Logistics Senawang — LaguLog V1.1</title>
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --amber: #f59e0b;
+      --amber-glow: rgba(245, 158, 11, 0.22);
+      --blue-accent: #38bdf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 16px 14px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding: 14px 12px;
+      background: linear-gradient(145deg, #111827 0%, #0f172a 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, #f59e0b, #fbbf24, #38bdf8);
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .header h1 {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+
+    .header p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Main Video Stage */
+    .player-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      background: #000000;
+    }
+
+    .video-wrapper iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    .placeholder-screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+      background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+    }
+
+    .placeholder-screen .icon {
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+
+    .placeholder-screen p {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 280px;
+      line-height: 1.4;
+    }
+
+    .now-playing-bar {
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: #0f172a;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .now-playing-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .now-playing-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--amber);
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      margin-bottom: 2px;
+    }
+
+    .now-playing-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-next {
+      background: var(--amber);
+      color: #090d16;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+
+    .btn-next:active {
+      transform: scale(0.96);
+    }
+
+    /* Quick Action Bar */
+    .action-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .btn-action {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-main);
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-action:active {
+      background: #1e293b;
+    }
+
+    .btn-wa {
+      background: rgba(16, 185, 129, 0.14);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    /* Section Header */
+    .section-title {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--amber);
+      margin-bottom: 10px;
+      padding-left: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-title span {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* Tracklist */
+    .tracklist {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+    }
+
+    .track-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .track-card:active {
+      transform: scale(0.985);
+    }
+
+    .track-card.active {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, #111827 100%);
+      border-color: var(--amber);
+      box-shadow: 0 0 15px var(--amber-glow);
+    }
+
+    .track-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: #1e293b;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .track-card.active .track-num {
+      background: var(--amber);
+      color: #090d16;
+    }
+
+    .track-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .track-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-bottom: 2px;
+    }
+
+    .track-card.active .track-title {
+      color: #fbbf24;
+    }
+
+    .track-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .track-status {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: #1e293b;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .track-card.active .track-status {
+      background: rgba(245, 158, 11, 0.2);
+      color: var(--amber);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 24px;
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .footer strong {
+      color: var(--amber);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="badge">Solmax Senawang • Logistics Crew</div>
+      <h1>KEHARMONIAN LOGISTICS SENAWANG</h1>
+      <p>Koleksi 8 Lagu Khas Warga Gudang &amp; Penghantaran</p>
+    </div>
+
+    <!-- Video Player Stage -->
+    <div class="player-card">
+      <div class="video-wrapper" id="videoContainer">
+        <div class="placeholder-screen" id="placeholderScreen">
+          <div class="icon">🎧</div>
+          <p>Pilih mana-mana lagu dari senarai di bawah untuk mula memainkan video.</p>
+        </div>
+      </div>
+      <div class="now-playing-bar">
+        <div class="now-playing-info">
+          <div class="now-playing-label" id="npLabel">SEDIA DIMAINKAN</div>
+          <div class="now-playing-title" id="npTitle">Pilih Lagu Team Senawang</div>
+        </div>
+        <button class="btn-next" onclick="playNext()">Seterusnya ⏭</button>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+      <a id="ytDirectLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-action" style="display:none;">
+        ▶️ Buka di YouTube
+      </a>
+      <button class="btn-action btn-wa" onclick="shareWhatsApp()">
+        📲 Kongsi ke WhatsApp Team
+      </button>
+    </div>
+
+    <!-- Section Header -->
+    <div class="section-title">
+      SENARAI LAGU TEAM SENAWANG <span>8 TREK</span>
+    </div>
+
+    <!-- Tracklist Container -->
+    <div class="tracklist" id="tracklist"></div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <strong>LaguLog V1.1</strong> • Created by <strong>myfarline AI</strong><br>
+      Dedikasi buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Senawang.
+    </div>
+  </div>
+
+  <script>
+    const SONGS = [
+      {
+        id: 1,
+        title: "Satu Jiwa Senawang",
+        desc: "Semangat berpasukan & kerjasama harian",
+        youtubeId: "GVa7ooxwqj4"
+      },
+      {
+        id: 2,
+        title: "1 Beat 5 Soul",
+        desc: "Lima jiwa bergerak dalam satu rentak kerja",
+        youtubeId: "VtlQGzzESqM"
+      },
+      {
+        id: 3,
+        title: "Gegar Senawang",
+        desc: "Rentak padu & semangat luar biasa warga gudang",
+        youtubeId: "IJGufr3nwxY"
+      },
+      {
+        id: 4,
+        title: "Nadi Senawang",
+        desc: "Tulang belakang kelancaran penghantaran",
+        youtubeId: "k5yqLZX2PpU"
+      },
+      {
+        id: 5,
+        title: "Team Paling Win",
+        desc: "Penghargaan buat kru paling pantas & mantap",
+        youtubeId: "pgKjjNr7fDA"
+      },
+      {
+        id: 6,
+        title: "Senawang on The Map",
+        desc: "Kebanggaan operasi tapak Senawang",
+        youtubeId: "RGKJPu2WwkQ"
+      },
+      {
+        id: 7,
+        title: "Sepakat 100%",
+        desc: "Komitmen penuh dari pagi hingga selesai tugasan",
+        youtubeId: "Tk2EpOH7j1Y"
+      },
+      {
+        id: 8,
+        title: "Senawang Bersinar",
+        desc: "Inspirasi & pencapaian bersama",
+        youtubeId: "DKsHnUGrpQA"
+      }
+    ];
+
+    let currentIndex = -1;
+
+    function extractYouTubeId(input) {
+      if (!input) return "";
+      const clean = input.trim();
+      const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
+      const match = clean.match(regExp);
+      return (match && match[1]) ? match[1] : clean;
+    }
+
+    function renderTracklist() {
+      const listEl = document.getElementById("tracklist");
+      listEl.innerHTML = "";
+
+      SONGS.forEach((song, index) => {
+        const isActive = index === currentIndex;
+        const card = document.createElement("div");
+        card.className = "track-card" + (isActive ? " active" : "");
+        card.onclick = () => playSong(index);
+
+        card.innerHTML = `
+          <div class="track-num">${isActive ? "▶" : song.id}</div>
+          <div class="track-info">
+            <div class="track-title">${song.title}</div>
+            <div class="track-desc">${song.desc}</div>
+          </div>
+          <div class="track-status">${isActive ? "Dimainkan" : "Main"}</div>
+        `;
+        listEl.appendChild(card);
+      });
+    }
+
+    function playSong(index) {
+      if (index < 0 || index >= SONGS.length) return;
+      currentIndex = index;
+      const song = SONGS[index];
+      const videoId = extractYouTubeId(song.youtubeId);
+
+      const container = document.getElementById("videoContainer");
+      const npLabel = document.getElementById("npLabel");
+      const npTitle = document.getElementById("npTitle");
+      const ytDirectLink = document.getElementById("ytDirectLink");
+
+      npLabel.textContent = `SEDANG DIMAINKAN • TREK ${song.id} / ${SONGS.length}`;
+      npTitle.textContent = song.title;
+
+      const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1`;
+      container.innerHTML = `
+        <iframe
+          src="${embedUrl}"
+          title="${song.title}"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      `;
+      ytDirectLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+      ytDirectLink.style.display = "flex";
+
+      renderTracklist();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function playNext() {
+      const nextIdx = (currentIndex + 1) % SONGS.length;
+      playSong(nextIdx);
+    }
+
+    function shareWhatsApp() {
+      const currentUrl = window.location.href;
+      const songText = currentIndex >= 0 ? `\nSedang dengar: *${SONGS[currentIndex].title}*` : "";
+      const message = `🎵 *KEHARMONIAN LOGISTICS SENAWANG* 🎵\nJom layan koleksi 8 lagu khas untuk warga kerja Logistics Senawang!${songText}\n\nBuka di sini:\n${currentUrl}`;
+      const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+      window.open(waUrl, "_blank");
+    }
+
+    renderTracklist();
+  </script>
+</body>
+</html>

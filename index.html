@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.1</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V1.3</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -168,6 +168,31 @@
       text-overflow: ellipsis;
     }
 
+    .player-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-prev {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.1s ease, background 0.2s ease;
+    }
+
+    .btn-prev:active {
+      transform: scale(0.96);
+      background: #334155;
+    }
+
     .btn-next {
       background: var(--amber);
       color: #090d16;
@@ -250,8 +275,8 @@
     .track-card {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
+      gap: 10px;
+      padding: 12px 12px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 14px;
@@ -270,8 +295,8 @@
     }
 
     .track-num {
-      width: 32px;
-      height: 32px;
+      width: 30px;
+      height: 30px;
       border-radius: 10px;
       background: #1e293b;
       color: var(--text-muted);
@@ -312,10 +337,34 @@
       text-overflow: ellipsis;
     }
 
+    .track-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .btn-lyrics {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 5px 8px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: var(--blue-accent);
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .btn-lyrics:active {
+      transform: scale(0.95);
+      background: rgba(56, 189, 248, 0.25);
+    }
+
     .track-status {
       font-size: 11px;
       font-weight: 700;
-      padding: 4px 8px;
+      padding: 5px 8px;
       border-radius: 8px;
       background: #1e293b;
       color: var(--text-muted);
@@ -325,6 +374,120 @@
     .track-card.active .track-status {
       background: rgba(245, 158, 11, 0.2);
       color: var(--amber);
+    }
+
+    /* Lyrics Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.82);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+    }
+
+    .modal-box {
+      width: 100%;
+      max-width: 460px;
+      max-height: 82vh;
+      background: #111827;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.7);
+      animation: popIn 0.18s ease-out;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.94); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 14px 16px;
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-header-text h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--amber);
+    }
+
+    .modal-header-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .btn-close-modal {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      width: 32px;
+      height: 32px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .modal-body {
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 13.5px;
+      line-height: 1.65;
+      color: #e2e8f0;
+      white-space: pre-line;
+    }
+
+    .modal-footer {
+      padding: 12px 16px;
+      background: #0f172a;
+      border-top: 1px solid var(--card-border);
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-modal-play {
+      flex: 1;
+      background: var(--amber);
+      color: #090d16;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 12.5px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .btn-modal-close {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 9px 14px;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     /* Footer */
@@ -364,7 +527,10 @@
           <div class="now-playing-label" id="npLabel">SEDIA DIMAINKAN</div>
           <div class="now-playing-title" id="npTitle">Pilih Lagu Team Senawang</div>
         </div>
-        <button class="btn-next" onclick="playNext()">Seterusnya ⏭</button>
+        <div class="player-controls">
+          <button class="btn-prev" onclick="playPrev()" title="Lagu Sebelumnya">⏮ Sebelumnya</button>
+          <button class="btn-next" onclick="playNext()" title="Lagu Seterusnya">Seterusnya ⏭</button>
+        </div>
       </div>
     </div>
 
@@ -388,8 +554,26 @@
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.1</strong> • Created by <strong>myfarline AI</strong><br>
+      <strong>LaguLog V1.3</strong> • Created by <strong>myfarline AI</strong><br>
       Dedikasi buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Senawang.
+    </div>
+  </div>
+
+  <!-- Lyrics Modal -->
+  <div class="modal-overlay" id="lyricsModal" onclick="closeLyricsOnBackdrop(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-header-text">
+          <h3 id="modalSongTitle">Tajuk Lagu</h3>
+          <p id="modalSongDesc">Penerangan trek</p>
+        </div>
+        <button class="btn-close-modal" onclick="closeLyrics()" aria-label="Tutup">✕</button>
+      </div>
+      <div class="modal-body" id="modalLyricsBody"></div>
+      <div class="modal-footer">
+        <button class="btn-modal-play" id="modalPlayBtn">▶ Mainkan Lagu Ini</button>
+        <button class="btn-modal-close" onclick="closeLyrics()">Tutup</button>
+      </div>
     </div>
   </div>
 
@@ -399,53 +583,172 @@
         id: 1,
         title: "Satu Jiwa Senawang",
         desc: "Semangat berpasukan & kerjasama harian",
-        youtubeId: "GVa7ooxwqj4"
+        youtubeId: "GVa7ooxwqj4",
+        lyrics: `[Verse 1]
+Pagi bermula di gudang Senawang
+Langkah diatur penuh semangat
+Dari rak tinggi hingga ke pintu loading
+Kita bergerak seiring seia sekata
+
+[Chorus]
+Satu jiwa Senawang, kita terus melangkah
+Walau berat beban, tak pernah mengalah
+Bahu-membahu dalam satu pasukan
+Keharmonian jadi kekuatan!
+
+[Verse 2]
+Susun setiap roll penuh teliti
+Semak pesanan sampai selesai
+En. Ahmad memantau dari jauh
+Kak Aisha memimpin penuh dedikasi
+
+[Outro]
+Satu jiwa, satu hati
+Logistics Senawang terus berbakti!`
       },
       {
         id: 2,
         title: "1 Beat 5 Soul",
         desc: "Lima jiwa bergerak dalam satu rentak kerja",
-        youtubeId: "VtlQGzzESqM"
+        youtubeId: "VtlQGzzESqM",
+        lyrics: `[Verse 1]
+Lima jiwa di lantai operasi
+Kak Aisha, Zu'ma, Roslee, Zaidi, Fazleen
+Setiap tugas ada peranannya
+Satu rentak tiada yang ketinggalan
+
+[Chorus]
+One beat, five souls — rentak kita sekata
+Dari pagi hingga petang menjelma
+Susun, semak, muat ke dalam kontena
+Lima hati bersatu demi kejayaan bersama!
+
+[Bridge]
+Bila cabaran datang menguji
+Sepakat kita cari solusi
+Tiada yang sendiri di sini
+Kerana kita satu famili`
       },
       {
         id: 3,
         title: "Gegar Senawang",
         desc: "Rentak padu & semangat luar biasa warga gudang",
-        youtubeId: "IJGufr3nwxY"
+        youtubeId: "IJGufr3nwxY",
+        lyrics: `[Intro]
+Bunyi forklift mula berderum
+Pintu gudang terbuka luas
+Inilah rentak warga Senawang!
+
+[Chorus]
+Gegar Senawang! Semangat membara
+Setiap kontena siap sedia
+Pantas, selamat, tepat pada masa
+Warga gudang tak pernah kenal lelah!
+
+[Verse]
+Dari PVD, FAB hingga ke Woven
+Semua teratur mengikut susunan
+Lori dan trailer beratur menanti
+Kru Senawang sentiasa beraksi!`
       },
       {
         id: 4,
         title: "Nadi Senawang",
         desc: "Tulang belakang kelancaran penghantaran",
-        youtubeId: "k5yqLZX2PpU"
+        youtubeId: "k5yqLZX2PpU",
+        lyrics: `[Verse 1]
+Di sebalik setiap penghantaran
+Ada keringat yang tak pernah padam
+Menyusun stok, mengira inventori
+Memastikan segalanya berjalan lancar
+
+[Chorus]
+Kamilah nadi di Senawang ini
+Tulang belakang setiap operasi
+Dari gudang terus ke destinasi
+Amanah dijaga sepenuh hati
+
+[Outro]
+Terus berdenyut penuh semangat
+Nadi Senawang kekal hebat!`
       },
       {
         id: 5,
         title: "Team Paling Win",
         desc: "Penghargaan buat kru paling pantas & mantap",
-        youtubeId: "pgKjjNr7fDA"
+        youtubeId: "pgKjjNr7fDA",
+        lyrics: `[Verse 1]
+Order masuk bertali arus
+Zu'ma siapkan dokumen terus
+Roslee, Zaidi dan Fazleen bersedia
+Forklift bergerak penuh bergaya
+
+[Chorus]
+Inilah dia team paling win!
+Kerja padu tanpa banyak alasan
+Saling membantu di setiap sudut
+Logistics Senawang memang terbaik!
+
+[Bridge]
+Penat lelah dibalas senyuman
+Bila semua kontena selamat jalan
+Syabas semua rakan seperjuangan!`
       },
       {
         id: 6,
         title: "Senawang on The Map",
         desc: "Kebanggaan operasi tapak Senawang",
-        youtubeId: "RGKJPu2WwkQ"
+        youtubeId: "RGKJPu2WwkQ",
+        lyrics: `[Verse 1]
+Dari Negeri Sembilan ke seluruh dunia
+Hasil kerja keras kita bersama
+Setiap kontena membawa nama
+Kualiti terbaik dari Senawang
+
+[Chorus]
+Put Senawang on the map!
+Rekod bersih, prestasi mantap
+Dari lantai gudang hingga ke pelabuhan
+Kebanggaan kita jadi kenyataan!`
       },
       {
         id: 7,
         title: "Sepakat 100%",
         desc: "Komitmen penuh dari pagi hingga selesai tugasan",
-        youtubeId: "Tk2EpOH7j1Y"
+        youtubeId: "Tk2EpOH7j1Y",
+        lyrics: `[Verse 1]
+Bila kerja dibuat bersama
+Yang berat terasa ringan
+Komunikasi jelas tanpa ragu
+Keselamatan sentiasa nombor satu
+
+[Chorus]
+Sepakat seratus peratus!
+Tiada halangan yang tak terurus
+Dari pagi sampai tutup pintu
+Semangat kita tetap padu!`
       },
       {
         id: 8,
         title: "Senawang Bersinar",
         desc: "Inspirasi & pencapaian bersama",
-        youtubeId: "DKsHnUGrpQA"
+        youtubeId: "DKsHnUGrpQA",
+        lyrics: `[Verse 1]
+Setiap hari adalah lembaran baharu
+Melangkah maju dengan ilmu dan pengalaman
+Terima kasih buat semua rakan
+Yang sentiasa memberi sokongan
+
+[Chorus]
+Senawang bersinar terang di persada
+Hasil muafakat dan usaha bersama
+Semoga ukhwah terus terpelihara
+Logistics Senawang selamanya jaya!`
       }
     ];
 
     let currentIndex = -1;
+    let modalSongIndex = -1;
 
     function extractYouTubeId(input) {
       if (!input) return "";
@@ -471,7 +774,10 @@
             <div class="track-title">${song.title}</div>
             <div class="track-desc">${song.desc}</div>
           </div>
-          <div class="track-status">${isActive ? "Dimainkan" : "Main"}</div>
+          <div class="track-actions">
+            <button class="btn-lyrics" onclick="openLyrics(event, ${index})" title="Lihat Lirik">Lirik</button>
+            <div class="track-status">${isActive ? "Dimainkan" : "Main"}</div>
+          </div>
         `;
         listEl.appendChild(card);
       });
@@ -507,15 +813,52 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
+    function playPrev() {
+      if (currentIndex <= 0) {
+        playSong(SONGS.length - 1);
+      } else {
+        playSong(currentIndex - 1);
+      }
+    }
+
     function playNext() {
       const nextIdx = (currentIndex + 1) % SONGS.length;
       playSong(nextIdx);
     }
 
+    function openLyrics(event, index) {
+      event.stopPropagation();
+      modalSongIndex = index;
+      const song = SONGS[index];
+      document.getElementById("modalSongTitle").textContent = `${song.id}. ${song.title}`;
+      document.getElementById("modalSongDesc").textContent = song.desc;
+      document.getElementById("modalLyricsBody").textContent = song.lyrics || "Lirik belum dikemas kini.";
+      document.getElementById("modalPlayBtn").onclick = () => {
+        closeLyrics();
+        playSong(index);
+      };
+      document.getElementById("lyricsModal").classList.add("show");
+    }
+
+    function closeLyrics() {
+      document.getElementById("lyricsModal").classList.remove("show");
+    }
+
+    function closeLyricsOnBackdrop(event) {
+      if (event.target.id === "lyricsModal") {
+        closeLyrics();
+      }
+    }
+
     function shareWhatsApp() {
       const currentUrl = window.location.href;
-      const songText = currentIndex >= 0 ? `\nSedang dengar: *${SONGS[currentIndex].title}*` : "";
-      const message = `🎵 *KEHARMONIAN LOGISTICS SENAWANG* 🎵\nJom layan koleksi 8 lagu khas untuk warga kerja Logistics Senawang!${songText}\n\nBuka di sini:\n${currentUrl}`;
+      const songText = currentIndex >= 0 ? `
+Sedang dengar: *${SONGS[currentIndex].title}*` : "";
+      const message = `🎵 *KEHARMONIAN LOGISTICS SENAWANG* 🎵
+Jom layan koleksi 8 lagu khas untuk warga kerja Logistics Senawang!${songText}
+
+Buka di sini:
+${currentUrl}`;
       const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(waUrl, "_blank");
     }

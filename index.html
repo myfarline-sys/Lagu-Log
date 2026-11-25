@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.5</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V1.6</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -12,6 +12,7 @@
       --amber: #f59e0b;
       --amber-light: #fbbf24;
       --amber-glow: rgba(245, 158, 11, 0.25);
+      --green-accent: #10b981;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -57,6 +58,12 @@
       width: 100%;
       padding-top: 56.25%; /* 16:9 */
       background: #000000;
+      transition: padding-top 0.3s ease;
+    }
+
+    /* Audio-Only Compact Mode */
+    .sticky-player.audio-only .video-wrapper {
+      padding-top: 120px;
     }
 
     .video-wrapper #yt-player,
@@ -69,6 +76,95 @@
       border: 0;
     }
 
+    /* Audio Visualizer Cover Overlay (Active when Audio-Only mode is ON) */
+    .audio-cover-stage {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #131a2c 0%, #0b101d 100%);
+      display: none;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 16px;
+      z-index: 3;
+    }
+
+    .sticky-player.audio-only .audio-cover-stage.visible {
+      display: flex;
+    }
+
+    .audio-thumb {
+      width: 84px;
+      height: 84px;
+      border-radius: 14px;
+      object-fit: cover;
+      border: 2px solid var(--amber);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      flex-shrink: 0;
+    }
+
+    .audio-meta-box {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .audio-mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.38);
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .audio-song-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 3px;
+    }
+
+    .audio-song-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Equalizer Bars */
+    .eq-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 11px;
+    }
+
+    .eq-bars span {
+      width: 2.5px;
+      background: #34d399;
+      border-radius: 2px;
+      animation: eqBounce 0.9s infinite ease-in-out;
+    }
+
+    .eq-bars span:nth-child(1) { height: 5px; animation-delay: 0s; }
+    .eq-bars span:nth-child(2) { height: 11px; animation-delay: 0.2s; }
+    .eq-bars span:nth-child(3) { height: 7px; animation-delay: 0.4s; }
+
+    @keyframes eqBounce {
+      0%, 100% { transform: scaleY(0.45); }
+      50% { transform: scaleY(1); }
+    }
+
     .placeholder-screen {
       position: absolute;
       inset: 0;
@@ -77,31 +173,44 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
+      padding: 16px;
       background: radial-gradient(circle at center, #1e2436 0%, #090d16 100%);
-      z-index: 2;
+      z-index: 4;
       cursor: pointer;
     }
 
+    .sticky-player.audio-only .placeholder-screen {
+      flex-direction: row;
+      text-align: left;
+      gap: 14px;
+    }
+
     .placeholder-play-btn {
-      width: 54px;
-      height: 54px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       background: var(--amber);
       color: #090d16;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 900;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       box-shadow: 0 0 20px var(--amber-glow);
+      flex-shrink: 0;
+    }
+
+    .sticky-player.audio-only .placeholder-play-btn {
+      margin-bottom: 0;
+      width: 44px;
+      height: 44px;
     }
 
     .placeholder-screen p {
-      font-size: 12.5px;
+      font-size: 12px;
       color: var(--text-muted);
-      max-width: 270px;
+      max-width: 275px;
       line-height: 1.4;
     }
 
@@ -183,7 +292,7 @@
     /* Quick Action Bar */
     .action-bar {
       display: flex;
-      gap: 8px;
+      gap: 7px;
       margin-bottom: 18px;
     }
 
@@ -192,20 +301,22 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 10px 12px;
+      gap: 5px;
+      padding: 10px 8px;
       border-radius: 12px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
       border: 1px solid var(--card-border);
       background: var(--card-bg);
       color: var(--text-main);
       text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.2s ease;
     }
 
     .btn-action:active {
-      background: #1e2436;
+      transform: scale(0.97);
     }
 
     .btn-play-all {
@@ -214,13 +325,26 @@
       color: var(--amber-light);
     }
 
+    .btn-audio-toggle {
+      background: #182032;
+      border-color: #2c3854;
+      color: #cbd5e1;
+    }
+
+    .btn-audio-toggle.active {
+      background: rgba(16, 185, 129, 0.18);
+      border-color: #10b981;
+      color: #34d399;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
+    }
+
     .btn-wa {
       background: rgba(16, 185, 129, 0.14);
       border-color: rgba(16, 185, 129, 0.4);
       color: #34d399;
     }
 
-    /* Section Header (Matching Reference Screenshot) */
+    /* Section Header */
     .section-header {
       display: flex;
       align-items: center;
@@ -246,7 +370,7 @@
       border-radius: 999px;
     }
 
-    /* Visual Card Tracklist (Matching Reference UI) */
+    /* Visual Card Tracklist */
     .tracklist {
       display: flex;
       flex-direction: column;
@@ -369,13 +493,29 @@
 <body>
 
   <div class="container">
-    <!-- Sticky Video Player Stage -->
-    <div class="sticky-player">
+    <!-- Sticky Video / Audio Player Stage -->
+    <div class="sticky-player" id="stickyPlayer">
       <div class="video-wrapper">
+        <!-- Placeholder sebelum lagu mula -->
         <div class="placeholder-screen" id="placeholderScreen" onclick="playSong(0)">
           <div class="placeholder-play-btn">▶</div>
-          <p>Tekan sini atau pilih mana-mana kad lagu di bawah. Lagu akan bersambung automatik hingga tamat.</p>
+          <p>Tekan sini atau pilih kad lagu di bawah. Semua 8 lagu bersambung automatik.</p>
         </div>
+
+        <!-- Paparan Khas Mod Audio Sahaja (Jimat Data) -->
+        <div class="audio-cover-stage" id="audioCoverStage">
+          <img id="audioCoverImg" class="audio-thumb" src="https://i.ytimg.com/vi/GVa7ooxwqj4/hqdefault.jpg" alt="Cover">
+          <div class="audio-meta-box">
+            <div class="audio-mode-pill">
+              <span class="eq-bars"><span></span><span></span><span></span></span>
+              MOD AUDIO • JIMAT DATA (144p)
+            </div>
+            <div class="audio-song-title" id="audioSongTitle">Satu Jiwa Senawang</div>
+            <div class="audio-song-desc" id="audioSongDesc">Semangat berpasukan & kerjasama harian</div>
+          </div>
+        </div>
+
+        <!-- YouTube Player IFrame -->
         <div id="yt-player"></div>
       </div>
 
@@ -383,7 +523,7 @@
         <div class="now-playing-info">
           <div class="now-playing-label">
             <span id="npLabel">SEDIA DIMAINKAN</span>
-            <span class="auto-badge">AUTO-NEXT AKTIF</span>
+            <span class="auto-badge">AUTO-NEXT</span>
           </div>
           <div class="now-playing-title" id="npTitle">Keharmonian Logistics Senawang</div>
         </div>
@@ -397,20 +537,20 @@
     <!-- Quick Action Bar -->
     <div class="action-bar">
       <button class="btn-action btn-play-all" onclick="playSong(0)">
-        ▶ Main Semua (Auto)
+        ▶ Main Semua
       </button>
-      <a id="ytDirectLink" href="https://www.youtube.com/watch?v=GVa7ooxwqj4" target="_blank" rel="noopener noreferrer" class="btn-action" style="display:none;">
-        YouTube ↗
-      </a>
+      <button class="btn-action btn-audio-toggle" id="btnAudioMode" onclick="toggleAudioMode()">
+        🎧 Audio Sahaja: OFF
+      </button>
       <button class="btn-action btn-wa" onclick="shareWhatsApp()">
-        📲 Kongsi Team
+        📲 Kongsi
       </button>
     </div>
 
     <!-- Section Header -->
     <div class="section-header">
       <h2>8 Pilihan Istimewa • Team Senawang</h2>
-      <span>LaguLog V1.5</span>
+      <span>LaguLog V1.6</span>
     </div>
 
     <!-- Visual Card Tracklist -->
@@ -418,12 +558,12 @@
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.5</strong> • Created by <strong>myfarline AI</strong><br>
+      <strong>LaguLog V1.6</strong> • Created by <strong>myfarline AI</strong><br>
       Dedikasi khas buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Solmax Senawang.
     </div>
   </div>
 
-  <!-- YouTube IFrame Player API untuk Auto-Continue tanpa klik -->
+  <!-- YouTube IFrame Player API -->
   <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const SONGS = [
@@ -489,6 +629,7 @@
     let player = null;
     let isApiReady = false;
     let pendingIndex = null;
+    let isAudioOnly = false;
 
     function getThumbUrl(videoId) {
       return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
@@ -503,6 +644,41 @@
       }
     }
 
+    function applyPlaybackQuality() {
+      if (!player) return;
+      try {
+        if (isAudioOnly && typeof player.setPlaybackQuality === "function") {
+          player.setPlaybackQuality("tiny"); // 144p paling jimat data
+        } else if (!isAudioOnly && typeof player.setPlaybackQuality === "function") {
+          player.setPlaybackQuality("default");
+        }
+      } catch (e) {}
+    }
+
+    function toggleAudioMode() {
+      isAudioOnly = !isAudioOnly;
+      const stickyPlayer = document.getElementById("stickyPlayer");
+      const btn = document.getElementById("btnAudioMode");
+      const coverStage = document.getElementById("audioCoverStage");
+
+      if (isAudioOnly) {
+        stickyPlayer.classList.add("audio-only");
+        btn.classList.add("active");
+        btn.textContent = "🎧 Audio Sahaja: ON";
+        if (currentIndex >= 0) {
+          coverStage.classList.add("visible");
+        }
+      } else {
+        stickyPlayer.classList.remove("audio-only");
+        btn.classList.remove("active");
+        btn.textContent = "🎧 Audio Sahaja: OFF";
+        coverStage.classList.remove("visible");
+      }
+
+      applyPlaybackQuality();
+      renderTracklist();
+    }
+
     function renderTracklist() {
       const listEl = document.getElementById("tracklist");
       listEl.innerHTML = "";
@@ -514,12 +690,15 @@
         card.id = `track-card-${index}`;
         card.onclick = () => playSong(index);
 
+        const idleLabel = isAudioOnly ? "🎧 Dengar" : "▶ Tonton";
+        const activeLabel = isAudioOnly ? "🎧 Sedang Dimainkan" : "▶ Sedang Dipilih";
+
         card.innerHTML = `
           <div class="card-thumb-box">
             <img src="${getThumbUrl(song.youtubeId)}" alt="${song.title}" loading="lazy">
             <div class="card-thumb-overlay"></div>
             <div class="status-pill">
-              ${isActive ? "▶ Sedang Dipilih" : "▶ Tonton"}
+              ${isActive ? activeLabel : idleLabel}
             </div>
           </div>
           <div class="card-body">
@@ -537,9 +716,17 @@
       document.getElementById("npLabel").textContent = `TREK 0${song.id} / 0${SONGS.length}`;
       document.getElementById("npTitle").textContent = song.title;
 
-      const ytDirectLink = document.getElementById("ytDirectLink");
-      ytDirectLink.href = `https://www.youtube.com/watch?v=${song.youtubeId}`;
-      ytDirectLink.style.display = "flex";
+      // Kemas kini paparan mod audio
+      document.getElementById("audioCoverImg").src = getThumbUrl(song.youtubeId);
+      document.getElementById("audioSongTitle").textContent = song.title;
+      document.getElementById("audioSongDesc").textContent = song.desc;
+
+      const coverStage = document.getElementById("audioCoverStage");
+      if (isAudioOnly) {
+        coverStage.classList.add("visible");
+      } else {
+        coverStage.classList.remove("visible");
+      }
 
       renderTracklist();
     }
@@ -572,17 +759,19 @@
           },
           events: {
             onReady: function (event) {
+              applyPlaybackQuality();
               event.target.playVideo();
             },
             onStateChange: function (event) {
-              // YT.PlayerState.ENDED === 0 -> Automatik sambung lagu seterusnya tanpa klik
+              if (event.data === YT.PlayerState.PLAYING) {
+                applyPlaybackQuality();
+              }
               if (event.data === YT.PlayerState.ENDED) {
                 const nextIdx = (currentIndex + 1) % SONGS.length;
                 playSong(nextIdx);
               }
             },
             onError: function () {
-              // Jika video bermasalah, lompat automatik ke lagu seterusnya selepas 2 saat
               setTimeout(() => {
                 const nextIdx = (currentIndex + 1) % SONGS.length;
                 playSong(nextIdx);
@@ -592,7 +781,8 @@
         });
       } else if (typeof player.loadVideoById === "function") {
         player.loadVideoById({
-          videoId: song.youtubeId
+          videoId: song.youtubeId,
+          suggestedQuality: isAudioOnly ? "tiny" : "default"
         });
       }
     }

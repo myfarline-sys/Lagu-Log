@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.8</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V1.9</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -579,7 +579,7 @@
           </div>
         </div>
 
-        <!-- YouTube Player Container -->
+        <!-- Slot Pemain YouTube (Diwujudkan semula secara bersih setiap kali playSong) -->
         <div id="yt-player"></div>
       </div>
 
@@ -625,7 +625,7 @@
     <!-- Section Header -->
     <div class="section-header">
       <h2>8 Pilihan Istimewa • Team Senawang</h2>
-      <span>LaguLog V1.8</span>
+      <span>LaguLog V1.9</span>
     </div>
 
     <!-- Visual Card Tracklist -->
@@ -633,7 +633,7 @@
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.8</strong> • Created by <strong>myfarline AI</strong><br>
+      <strong>LaguLog V1.9</strong> • Created by <strong>myfarline AI</strong><br>
       Dedikasi khas buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Solmax Senawang.
     </div>
   </div>
@@ -746,7 +746,6 @@
       const iframe = document.querySelector("#videoWrapper iframe");
 
       if (!isPaused) {
-        // Jeda lagu (Pause)
         if (player && isPlayerReady && typeof player.pauseVideo === "function") {
           player.pauseVideo();
         } else if (iframe && iframe.contentWindow) {
@@ -755,7 +754,6 @@
         syncPauseButtonUI(true);
         document.getElementById("npLabel").textContent = `DIJEDA • TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
       } else {
-        // Sambung semula lagu (Resume)
         if (player && isPlayerReady && typeof player.playVideo === "function") {
           player.playVideo();
         } else if (iframe && iframe.contentWindow) {
@@ -766,21 +764,37 @@
       }
     }
 
+    // Reset total slot pemain supaya tidak meninggalkan iframe kosong / about:blank yang menyebabkan skrin hitam
+    function resetPlayerSlot() {
+      if (player && typeof player.destroy === "function") {
+        try {
+          player.destroy();
+        } catch (e) {}
+      }
+      player = null;
+      isPlayerReady = false;
+
+      const wrapper = document.getElementById("videoWrapper");
+      if (!wrapper) return;
+
+      // Buang iframe lama atau elemen #yt-player lama jika ada
+      const oldPlayerEl = wrapper.querySelector("#yt-player, iframe");
+      if (oldPlayerEl) {
+        oldPlayerEl.remove();
+      }
+
+      const freshSlot = document.createElement("div");
+      freshSlot.id = "yt-player";
+      wrapper.appendChild(freshSlot);
+    }
+
     function stopPlayer() {
       clearTimeout(fallbackTimer);
       isStopped = true;
       syncPauseButtonUI(false);
 
-      if (player && isPlayerReady && typeof player.stopVideo === "function") {
-        try {
-          player.stopVideo();
-        } catch (e) {}
-      }
-
-      const iframe = document.querySelector("#videoWrapper iframe");
-      if (iframe) {
-        iframe.src = "about:blank";
-      }
+      // Musnahkan dan reset slot pemain secara bersih
+      resetPlayerSlot();
 
       currentIndex = -1;
       document.getElementById("npLabel").textContent = "DIHENTIKAN (STOP)";
@@ -887,13 +901,14 @@
 
       fallbackTimer = setTimeout(() => {
         fallbackBar.classList.add("show");
-      }, 4000);
+      }, 4500);
     }
 
     function loadDirectIframeFallback(videoId, title) {
-      const existingFrame = document.getElementById("yt-player");
-      if (existingFrame) {
-        existingFrame.outerHTML = `
+      resetPlayerSlot();
+      const targetSlot = document.getElementById("yt-player");
+      if (targetSlot) {
+        targetSlot.outerHTML = `
           <iframe id="yt-player"
             src="https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0&enablejsapi=1"
             title="${title}"
@@ -906,6 +921,7 @@
     }
 
     function createYouTubePlayer(song) {
+      resetPlayerSlot();
       player = new YT.Player("yt-player", {
         height: "100%",
         width: "100%",
@@ -970,6 +986,7 @@
     function playSong(index) {
       if (index < 0 || index >= SONGS.length) return;
 
+      const wasStopped = isStopped;
       isStopped = false;
       syncPauseButtonUI(false);
 
@@ -984,7 +1001,8 @@
       startFallbackTimer();
 
       if (typeof YT !== "undefined" && typeof YT.Player === "function") {
-        if (!player) {
+        // Jika baru lepas tekan Stop atau player belum wujud, bina semula instance YT.Player dengan bersih
+        if (wasStopped || !player) {
           createYouTubePlayer(song);
         } else if (isPlayerReady && typeof player.loadVideoById === "function") {
           player.loadVideoById({
@@ -994,7 +1012,7 @@
           if (typeof player.unMute === "function") player.unMute();
           if (typeof player.playVideo === "function") player.playVideo();
         } else {
-          loadDirectIframeFallback(song.youtubeId, song.title);
+          createYouTubePlayer(song);
         }
       } else {
         loadDirectIframeFallback(song.youtubeId, song.title);

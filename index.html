@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.9</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V2.0</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -305,7 +305,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .btn-ctrl {
@@ -319,17 +319,21 @@
       cursor: pointer;
       transition: transform 0.1s ease, background 0.2s ease, border-color 0.2s ease;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .btn-ctrl:active {
       transform: scale(0.95);
     }
 
+    /* Fixed width so switching between Pause & Sambung never shifts neighboring buttons */
     .btn-ctrl-pause {
       background: rgba(245, 158, 11, 0.16);
       color: var(--amber-light);
       border-color: rgba(245, 158, 11, 0.45);
       font-weight: 800;
+      min-width: 96px;
+      text-align: center;
     }
 
     .btn-ctrl-pause.paused {
@@ -579,7 +583,7 @@
           </div>
         </div>
 
-        <!-- Slot Pemain YouTube (Diwujudkan semula secara bersih setiap kali playSong) -->
+        <!-- Slot Pemain YouTube -->
         <div id="yt-player"></div>
       </div>
 
@@ -625,7 +629,7 @@
     <!-- Section Header -->
     <div class="section-header">
       <h2>8 Pilihan Istimewa • Team Senawang</h2>
-      <span>LaguLog V1.9</span>
+      <span>LaguLog V2.0</span>
     </div>
 
     <!-- Visual Card Tracklist -->
@@ -633,7 +637,7 @@
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.9</strong> • Created by <strong>myfarline AI</strong><br>
+      <strong>LaguLog V2.0</strong> • Created by <strong>myfarline AI</strong><br>
       Dedikasi khas buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Solmax Senawang.
     </div>
   </div>
@@ -704,6 +708,8 @@
     let isAudioOnly = false;
     let isPaused = false;
     let isStopped = false;
+    let isSwitchingTrack = false;
+    let switchingGuardTimer = null;
     let fallbackTimer = null;
 
     function getThumbUrl(videoId) {
@@ -753,6 +759,7 @@
         }
         syncPauseButtonUI(true);
         document.getElementById("npLabel").textContent = `DIJEDA • TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+        renderTracklist();
       } else {
         if (player && isPlayerReady && typeof player.playVideo === "function") {
           player.playVideo();
@@ -761,10 +768,10 @@
         }
         syncPauseButtonUI(false);
         document.getElementById("npLabel").textContent = `TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+        renderTracklist();
       }
     }
 
-    // Reset total slot pemain supaya tidak meninggalkan iframe kosong / about:blank yang menyebabkan skrin hitam
     function resetPlayerSlot() {
       if (player && typeof player.destroy === "function") {
         try {
@@ -777,7 +784,6 @@
       const wrapper = document.getElementById("videoWrapper");
       if (!wrapper) return;
 
-      // Buang iframe lama atau elemen #yt-player lama jika ada
       const oldPlayerEl = wrapper.querySelector("#yt-player, iframe");
       if (oldPlayerEl) {
         oldPlayerEl.remove();
@@ -790,10 +796,11 @@
 
     function stopPlayer() {
       clearTimeout(fallbackTimer);
+      clearTimeout(switchingGuardTimer);
+      isSwitchingTrack = false;
       isStopped = true;
       syncPauseButtonUI(false);
 
-      // Musnahkan dan reset slot pemain secara bersih
       resetPlayerSlot();
 
       currentIndex = -1;
@@ -950,6 +957,8 @@
           onStateChange: function (event) {
             if (isStopped) return;
             if (event.data === YT.PlayerState.PLAYING) {
+              isSwitchingTrack = false;
+              clearTimeout(switchingGuardTimer);
               clearTimeout(fallbackTimer);
               document.getElementById("ytFallbackBar").classList.remove("show");
               syncPauseButtonUI(false);
@@ -960,17 +969,24 @@
                 event.target.unMute();
               }
               applyPlaybackQuality();
+              renderTracklist();
             } else if (event.data === YT.PlayerState.PAUSED) {
+              // Abaikan event PAUSED sementara yang dicetuskan oleh YouTube semasa menukar trek
+              if (isSwitchingTrack) return;
               syncPauseButtonUI(true);
               if (currentIndex >= 0) {
                 document.getElementById("npLabel").textContent = `DIJEDA • TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
               }
+              renderTracklist();
             } else if (event.data === YT.PlayerState.ENDED) {
+              if (isSwitchingTrack) return;
               const nextIdx = (currentIndex + 1) % SONGS.length;
               playSong(nextIdx);
             }
           },
           onError: function (event) {
+            isSwitchingTrack = false;
+            clearTimeout(switchingGuardTimer);
             const fallbackText = document.getElementById("ytFallbackText");
             if (event && (event.data === 101 || event.data === 150)) {
               fallbackText.textContent = "Video ini dihadkan oleh YouTube untuk embed. Buka di YouTube:";
@@ -988,6 +1004,14 @@
 
       const wasStopped = isStopped;
       isStopped = false;
+
+      // Tandakan fasa pertukaran trek supaya event PAUSED sementara YouTube tidak mengubah butang Pause -> Sambung
+      isSwitchingTrack = true;
+      clearTimeout(switchingGuardTimer);
+      switchingGuardTimer = setTimeout(() => {
+        isSwitchingTrack = false;
+      }, 2500);
+
       syncPauseButtonUI(false);
 
       const placeholder = document.getElementById("placeholderScreen");
@@ -1001,7 +1025,6 @@
       startFallbackTimer();
 
       if (typeof YT !== "undefined" && typeof YT.Player === "function") {
-        // Jika baru lepas tekan Stop atau player belum wujud, bina semula instance YT.Player dengan bersih
         if (wasStopped || !player) {
           createYouTubePlayer(song);
         } else if (isPlayerReady && typeof player.loadVideoById === "function") {

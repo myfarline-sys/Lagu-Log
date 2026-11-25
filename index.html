@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.4</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V1.5</title>
   <style>
     :root {
       --bg-dark: #090d16;
-      --card-bg: #111827;
-      --card-border: #1f2937;
+      --card-bg: #121622;
+      --card-border: #23293a;
       --amber: #f59e0b;
-      --amber-glow: rgba(245, 158, 11, 0.22);
-      --blue-accent: #38bdf8;
+      --amber-light: #fbbf24;
+      --amber-glow: rgba(245, 158, 11, 0.25);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -31,81 +31,39 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 16px 14px 40px;
+      padding: 14px 14px 44px;
     }
 
     .container {
       width: 100%;
-      max-width: 520px;
+      max-width: 480px;
     }
 
-    /* Header */
-    .header {
-      text-align: center;
-      margin-bottom: 16px;
-      padding: 14px 12px;
-      background: linear-gradient(145deg, #111827 0%, #0f172a 100%);
-      border: 1px solid var(--card-border);
-      border-radius: 16px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .header::before {
-      content: "";
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 3px;
-      background: linear-gradient(90deg, #f59e0b, #fbbf24, #38bdf8);
-    }
-
-    .badge {
-      display: inline-block;
-      background: rgba(245, 158, 11, 0.15);
-      color: var(--amber);
-      border: 1px solid rgba(245, 158, 11, 0.4);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.8px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
-
-    .header h1 {
-      font-size: 19px;
-      font-weight: 800;
-      letter-spacing: 0.3px;
-      color: #ffffff;
-      margin-bottom: 4px;
-    }
-
-    .header p {
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    /* Main Video Stage */
-    .player-card {
+    /* Sticky Top Player Stage */
+    .sticky-player {
+      position: sticky;
+      top: 10px;
+      z-index: 50;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 16px;
+      border-radius: 18px;
       overflow: hidden;
       margin-bottom: 14px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.65);
     }
 
     .video-wrapper {
       position: relative;
       width: 100%;
-      padding-top: 56.25%; /* 16:9 Aspect Ratio */
+      padding-top: 56.25%; /* 16:9 */
       background: #000000;
     }
 
+    .video-wrapper #yt-player,
     .video-wrapper iframe {
       position: absolute;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       border: 0;
@@ -120,28 +78,40 @@
       justify-content: center;
       text-align: center;
       padding: 20px;
-      background: radial-gradient(circle at center, #1e293b 0%, #090d16 100%);
+      background: radial-gradient(circle at center, #1e2436 0%, #090d16 100%);
+      z-index: 2;
+      cursor: pointer;
     }
 
-    .placeholder-screen .icon {
-      font-size: 36px;
-      margin-bottom: 8px;
+    .placeholder-play-btn {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--amber);
+      color: #090d16;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 900;
+      margin-bottom: 10px;
+      box-shadow: 0 0 20px var(--amber-glow);
     }
 
     .placeholder-screen p {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--text-muted);
-      max-width: 280px;
+      max-width: 270px;
       line-height: 1.4;
     }
 
     .now-playing-bar {
-      padding: 12px 14px;
+      padding: 11px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: #0f172a;
+      background: #0f131f;
       border-top: 1px solid var(--card-border);
     }
 
@@ -152,11 +122,23 @@
 
     .now-playing-label {
       font-size: 10px;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--amber);
       text-transform: uppercase;
       letter-spacing: 0.7px;
       margin-bottom: 2px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .auto-badge {
+      background: rgba(16, 185, 129, 0.16);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 1px 6px;
+      border-radius: 6px;
+      font-size: 9px;
     }
 
     .now-playing-title {
@@ -175,46 +157,34 @@
       flex-shrink: 0;
     }
 
-    .btn-prev {
-      background: #1e293b;
+    .btn-ctrl {
+      background: #1e2436;
       color: var(--text-main);
-      border: 1px solid #334155;
+      border: 1px solid #2e3750;
       border-radius: 10px;
-      padding: 8px 10px;
+      padding: 7px 10px;
       font-size: 12px;
       font-weight: 700;
       cursor: pointer;
-      white-space: nowrap;
       transition: transform 0.1s ease, background 0.2s ease;
     }
 
-    .btn-prev:active {
-      transform: scale(0.96);
-      background: #334155;
+    .btn-ctrl:active {
+      transform: scale(0.95);
     }
 
-    .btn-next {
+    .btn-ctrl-primary {
       background: var(--amber);
       color: #090d16;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 12px;
-      font-size: 12px;
+      border-color: var(--amber);
       font-weight: 800;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: transform 0.1s ease, opacity 0.2s ease;
-    }
-
-    .btn-next:active {
-      transform: scale(0.96);
     }
 
     /* Quick Action Bar */
     .action-bar {
       display: flex;
       gap: 8px;
-      margin-bottom: 16px;
+      margin-bottom: 18px;
     }
 
     .btn-action {
@@ -232,11 +202,16 @@
       background: var(--card-bg);
       color: var(--text-main);
       text-decoration: none;
-      transition: background 0.2s;
     }
 
     .btn-action:active {
-      background: #1e293b;
+      background: #1e2436;
+    }
+
+    .btn-play-all {
+      background: rgba(245, 158, 11, 0.14);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: var(--amber-light);
     }
 
     .btn-wa {
@@ -245,120 +220,145 @@
       color: #34d399;
     }
 
-    /* Section Header */
-    .section-title {
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--amber);
-      margin-bottom: 10px;
-      padding-left: 4px;
+    /* Section Header (Matching Reference Screenshot) */
+    .section-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      margin-bottom: 12px;
+      padding: 0 2px;
     }
 
-    .section-title span {
-      color: var(--text-muted);
+    .section-header h2 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #e2e8f0;
+      letter-spacing: 0.2px;
+    }
+
+    .section-header span {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
+      color: var(--amber);
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 3px 9px;
+      border-radius: 999px;
     }
 
-    /* Tracklist */
+    /* Visual Card Tracklist (Matching Reference UI) */
     .tracklist {
       display: flex;
       flex-direction: column;
-      gap: 9px;
+      gap: 16px;
     }
 
-    .track-card {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 14px;
+    .visual-card {
       background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 14px;
+      border: 2px solid var(--card-border);
+      border-radius: 18px;
+      overflow: hidden;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: transform 0.15s ease, border-color 0.25s ease, box-shadow 0.25s ease;
     }
 
-    .track-card:active {
+    .visual-card:active {
       transform: scale(0.985);
     }
 
-    .track-card.active {
-      background: linear-gradient(90deg, rgba(245, 158, 11, 0.16) 0%, #111827 100%);
+    .visual-card.active {
       border-color: var(--amber);
-      box-shadow: 0 0 15px var(--amber-glow);
+      box-shadow: 0 0 22px var(--amber-glow);
     }
 
-    .track-num {
-      width: 32px;
-      height: 32px;
-      border-radius: 10px;
-      background: #1e293b;
-      color: var(--text-muted);
-      font-size: 13px;
+    .card-thumb-box {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%; /* 16:9 cover */
+      background: #1a2030;
+      overflow: hidden;
+    }
+
+    .card-thumb-box img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+
+    .visual-card.active .card-thumb-box img {
+      transform: scale(1.03);
+    }
+
+    .card-thumb-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(9, 13, 22, 0.72) 0%, rgba(9, 13, 22, 0.08) 45%, transparent 100%);
+    }
+
+    .status-pill {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      background: rgba(15, 20, 32, 0.88);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      color: var(--amber-light);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      padding: 6px 13px;
+      border-radius: 999px;
+      font-size: 12px;
       font-weight: 800;
       display: flex;
       align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      gap: 5px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
     }
 
-    .track-card.active .track-num {
+    .visual-card.active .status-pill {
       background: var(--amber);
       color: #090d16;
+      border-color: var(--amber);
     }
 
-    .track-info {
-      flex: 1;
-      min-width: 0;
+    .card-body {
+      padding: 14px 16px 16px;
+      background: linear-gradient(180deg, #131826 0%, #0f131e 100%);
     }
 
-    .track-title {
-      font-size: 14px;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-bottom: 2px;
-    }
-
-    .track-card.active .track-title {
-      color: #fbbf24;
-    }
-
-    .track-desc {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .track-status {
+    .card-meta {
       font-size: 11px;
-      font-weight: 700;
-      padding: 5px 10px;
-      border-radius: 8px;
-      background: #1e293b;
-      color: var(--text-muted);
-      flex-shrink: 0;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--amber);
+      margin-bottom: 5px;
     }
 
-    .track-card.active .track-status {
-      background: rgba(245, 158, 11, 0.2);
-      color: var(--amber);
+    .card-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      line-height: 1.4;
     }
 
     /* Footer */
     .footer {
-      margin-top: 24px;
+      margin-top: 26px;
       text-align: center;
-      font-size: 11px;
+      font-size: 11.5px;
       color: var(--text-muted);
-      line-height: 1.5;
+      line-height: 1.6;
+      padding: 0 10px;
     }
 
     .footer strong {
@@ -369,104 +369,116 @@
 <body>
 
   <div class="container">
-    <!-- Header -->
-    <div class="header">
-      <div class="badge">Solmax Senawang • Logistics Crew</div>
-      <h1>KEHARMONIAN LOGISTICS SENAWANG</h1>
-      <p>Koleksi 8 Lagu Khas Warga Gudang &amp; Penghantaran</p>
-    </div>
-
-    <!-- Video Player Stage -->
-    <div class="player-card">
-      <div class="video-wrapper" id="videoContainer">
-        <div class="placeholder-screen" id="placeholderScreen">
-          <div class="icon">🎧</div>
-          <p>Pilih mana-mana lagu dari senarai di bawah untuk mula memainkan video.</p>
+    <!-- Sticky Video Player Stage -->
+    <div class="sticky-player">
+      <div class="video-wrapper">
+        <div class="placeholder-screen" id="placeholderScreen" onclick="playSong(0)">
+          <div class="placeholder-play-btn">▶</div>
+          <p>Tekan sini atau pilih mana-mana kad lagu di bawah. Lagu akan bersambung automatik hingga tamat.</p>
         </div>
+        <div id="yt-player"></div>
       </div>
+
       <div class="now-playing-bar">
         <div class="now-playing-info">
-          <div class="now-playing-label" id="npLabel">SEDIA DIMAINKAN</div>
-          <div class="now-playing-title" id="npTitle">Pilih Lagu Team Senawang</div>
+          <div class="now-playing-label">
+            <span id="npLabel">SEDIA DIMAINKAN</span>
+            <span class="auto-badge">AUTO-NEXT AKTIF</span>
+          </div>
+          <div class="now-playing-title" id="npTitle">Keharmonian Logistics Senawang</div>
         </div>
         <div class="player-controls">
-          <button class="btn-prev" onclick="playPrev()" title="Lagu Sebelumnya">⏮ Sebelumnya</button>
-          <button class="btn-next" onclick="playNext()" title="Lagu Seterusnya">Seterusnya ⏭</button>
+          <button class="btn-ctrl" onclick="playPrev()" title="Lagu Sebelumnya">⏮</button>
+          <button class="btn-ctrl btn-ctrl-primary" onclick="playNext()" title="Lagu Seterusnya">Seterusnya ⏭</button>
         </div>
       </div>
     </div>
 
-    <!-- Action Bar -->
+    <!-- Quick Action Bar -->
     <div class="action-bar">
-      <a id="ytDirectLink" href="#" target="_blank" rel="noopener noreferrer" class="btn-action" style="display:none;">
-        ▶️ Buka di YouTube
+      <button class="btn-action btn-play-all" onclick="playSong(0)">
+        ▶ Main Semua (Auto)
+      </button>
+      <a id="ytDirectLink" href="https://www.youtube.com/watch?v=GVa7ooxwqj4" target="_blank" rel="noopener noreferrer" class="btn-action" style="display:none;">
+        YouTube ↗
       </a>
       <button class="btn-action btn-wa" onclick="shareWhatsApp()">
-        📲 Kongsi ke WhatsApp Team
+        📲 Kongsi Team
       </button>
     </div>
 
     <!-- Section Header -->
-    <div class="section-title">
-      SENARAI LAGU TEAM SENAWANG <span>8 TREK</span>
+    <div class="section-header">
+      <h2>8 Pilihan Istimewa • Team Senawang</h2>
+      <span>LaguLog V1.5</span>
     </div>
 
-    <!-- Tracklist Container -->
+    <!-- Visual Card Tracklist -->
     <div class="tracklist" id="tracklist"></div>
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.4</strong> • Created by <strong>myfarline AI</strong><br>
-      Dedikasi buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Senawang.
+      <strong>LaguLog V1.5</strong> • Created by <strong>myfarline AI</strong><br>
+      Dedikasi khas buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Solmax Senawang.
     </div>
   </div>
 
+  <!-- YouTube IFrame Player API untuk Auto-Continue tanpa klik -->
+  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const SONGS = [
       {
         id: 1,
+        tag: "TREK 01 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Satu Jiwa Senawang",
         desc: "Semangat berpasukan & kerjasama harian",
         youtubeId: "GVa7ooxwqj4"
       },
       {
         id: 2,
+        tag: "TREK 02 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "1 Beat 5 Soul",
         desc: "Lima jiwa bergerak dalam satu rentak kerja",
         youtubeId: "VtlQGzzESqM"
       },
       {
         id: 3,
+        tag: "TREK 03 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Gegar Senawang",
         desc: "Rentak padu & semangat luar biasa warga gudang",
         youtubeId: "IJGufr3nwxY"
       },
       {
         id: 4,
+        tag: "TREK 04 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Nadi Senawang",
         desc: "Tulang belakang kelancaran penghantaran",
         youtubeId: "k5yqLZX2PpU"
       },
       {
         id: 5,
+        tag: "TREK 05 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Team Paling Win",
         desc: "Penghargaan buat kru paling pantas & mantap",
         youtubeId: "pgKjjNr7fDA"
       },
       {
         id: 6,
+        tag: "TREK 06 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Senawang on The Map",
         desc: "Kebanggaan operasi tapak Senawang",
         youtubeId: "RGKJPu2WwkQ"
       },
       {
         id: 7,
+        tag: "TREK 07 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Sepakat 100%",
         desc: "Komitmen penuh dari pagi hingga selesai tugasan",
         youtubeId: "Tk2EpOH7j1Y"
       },
       {
         id: 8,
+        tag: "TREK 08 • KEHARMONIAN LOGISTICS SENAWANG",
         title: "Senawang Bersinar",
         desc: "Inspirasi & pencapaian bersama",
         youtubeId: "DKsHnUGrpQA"
@@ -474,13 +486,21 @@
     ];
 
     let currentIndex = -1;
+    let player = null;
+    let isApiReady = false;
+    let pendingIndex = null;
 
-    function extractYouTubeId(input) {
-      if (!input) return "";
-      const clean = input.trim();
-      const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/;
-      const match = clean.match(regExp);
-      return (match && match[1]) ? match[1] : clean;
+    function getThumbUrl(videoId) {
+      return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+
+    function onYouTubeIframeAPIReady() {
+      isApiReady = true;
+      if (pendingIndex !== null) {
+        const idx = pendingIndex;
+        pendingIndex = null;
+        playSong(idx);
+      }
     }
 
     function renderTracklist() {
@@ -490,49 +510,91 @@
       SONGS.forEach((song, index) => {
         const isActive = index === currentIndex;
         const card = document.createElement("div");
-        card.className = "track-card" + (isActive ? " active" : "");
+        card.className = "visual-card" + (isActive ? " active" : "");
+        card.id = `track-card-${index}`;
         card.onclick = () => playSong(index);
 
         card.innerHTML = `
-          <div class="track-num">${isActive ? "▶" : song.id}</div>
-          <div class="track-info">
-            <div class="track-title">${song.title}</div>
-            <div class="track-desc">${song.desc}</div>
+          <div class="card-thumb-box">
+            <img src="${getThumbUrl(song.youtubeId)}" alt="${song.title}" loading="lazy">
+            <div class="card-thumb-overlay"></div>
+            <div class="status-pill">
+              ${isActive ? "▶ Sedang Dipilih" : "▶ Tonton"}
+            </div>
           </div>
-          <div class="track-status">${isActive ? "Dimainkan" : "Main"}</div>
+          <div class="card-body">
+            <div class="card-meta">${song.tag}</div>
+            <div class="card-title">${song.title}</div>
+            <div class="card-desc">${song.desc}</div>
+          </div>
         `;
         listEl.appendChild(card);
       });
     }
 
-    function playSong(index) {
-      if (index < 0 || index >= SONGS.length) return;
-      currentIndex = index;
+    function updateNowPlayingUI(index) {
       const song = SONGS[index];
-      const videoId = extractYouTubeId(song.youtubeId);
+      document.getElementById("npLabel").textContent = `TREK 0${song.id} / 0${SONGS.length}`;
+      document.getElementById("npTitle").textContent = song.title;
 
-      const container = document.getElementById("videoContainer");
-      const npLabel = document.getElementById("npLabel");
-      const npTitle = document.getElementById("npTitle");
       const ytDirectLink = document.getElementById("ytDirectLink");
-
-      npLabel.textContent = `SEDANG DIMAINKAN • TREK ${song.id} / ${SONGS.length}`;
-      npTitle.textContent = song.title;
-
-      const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1`;
-      container.innerHTML = `
-        <iframe
-          src="${embedUrl}"
-          title="${song.title}"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-          allowfullscreen>
-        </iframe>
-      `;
-      ytDirectLink.href = `https://www.youtube.com/watch?v=${videoId}`;
+      ytDirectLink.href = `https://www.youtube.com/watch?v=${song.youtubeId}`;
       ytDirectLink.style.display = "flex";
 
       renderTracklist();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function playSong(index) {
+      if (index < 0 || index >= SONGS.length) return;
+
+      const placeholder = document.getElementById("placeholderScreen");
+      if (placeholder) {
+        placeholder.style.display = "none";
+      }
+
+      currentIndex = index;
+      const song = SONGS[index];
+      updateNowPlayingUI(index);
+
+      if (!isApiReady || typeof YT === "undefined" || !YT.Player) {
+        pendingIndex = index;
+        return;
+      }
+
+      if (!player) {
+        player = new YT.Player("yt-player", {
+          videoId: song.youtubeId,
+          playerVars: {
+            autoplay: 1,
+            playsinline: 1,
+            rel: 0,
+            modestbranding: 1
+          },
+          events: {
+            onReady: function (event) {
+              event.target.playVideo();
+            },
+            onStateChange: function (event) {
+              // YT.PlayerState.ENDED === 0 -> Automatik sambung lagu seterusnya tanpa klik
+              if (event.data === YT.PlayerState.ENDED) {
+                const nextIdx = (currentIndex + 1) % SONGS.length;
+                playSong(nextIdx);
+              }
+            },
+            onError: function () {
+              // Jika video bermasalah, lompat automatik ke lagu seterusnya selepas 2 saat
+              setTimeout(() => {
+                const nextIdx = (currentIndex + 1) % SONGS.length;
+                playSong(nextIdx);
+              }, 2000);
+            }
+          }
+        });
+      } else if (typeof player.loadVideoById === "function") {
+        player.loadVideoById({
+          videoId: song.youtubeId
+        });
+      }
     }
 
     function playPrev() {

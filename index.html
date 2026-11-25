@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Keharmonian Logistics Senawang — LaguLog V1.6</title>
+  <title>Keharmonian Logistics Senawang — LaguLog V1.8</title>
   <style>
     :root {
       --bg-dark: #090d16;
@@ -13,6 +13,7 @@
       --amber-light: #fbbf24;
       --amber-glow: rgba(245, 158, 11, 0.25);
       --green-accent: #10b981;
+      --red-accent: #ef4444;
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
     }
@@ -76,7 +77,7 @@
       border: 0;
     }
 
-    /* Audio Visualizer Cover Overlay (Active when Audio-Only mode is ON) */
+    /* Audio Visualizer Cover Overlay */
     .audio-cover-stage {
       position: absolute;
       inset: 0;
@@ -86,6 +87,7 @@
       gap: 14px;
       padding: 14px 16px;
       z-index: 3;
+      pointer-events: none;
     }
 
     .sticky-player.audio-only .audio-cover-stage.visible {
@@ -160,6 +162,12 @@
     .eq-bars span:nth-child(2) { height: 11px; animation-delay: 0.2s; }
     .eq-bars span:nth-child(3) { height: 7px; animation-delay: 0.4s; }
 
+    .eq-bars.paused span {
+      animation: none;
+      height: 4px;
+      opacity: 0.55;
+    }
+
     @keyframes eqBounce {
       0%, 100% { transform: scaleY(0.45); }
       50% { transform: scaleY(1); }
@@ -214,14 +222,48 @@
       line-height: 1.4;
     }
 
+    /* Fallback Banner if Autoplay Blocked or Error */
+    .yt-fallback-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 8px 14px;
+      background: rgba(245, 158, 11, 0.14);
+      border-top: 1px solid rgba(245, 158, 11, 0.35);
+      font-size: 11.5px;
+      color: #fde68a;
+    }
+
+    .yt-fallback-bar.show {
+      display: flex;
+    }
+
+    .yt-fallback-bar a {
+      background: var(--amber);
+      color: #090d16;
+      font-weight: 800;
+      text-decoration: none;
+      padding: 4px 10px;
+      border-radius: 8px;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+
     .now-playing-bar {
       padding: 11px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      background: #0f131f;
+      border-top: 1px solid var(--card-border);
+    }
+
+    .now-playing-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 10px;
-      background: #0f131f;
-      border-top: 1px solid var(--card-border);
     }
 
     .now-playing-info {
@@ -263,7 +305,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
-      flex-shrink: 0;
+      flex-wrap: wrap;
     }
 
     .btn-ctrl {
@@ -272,14 +314,35 @@
       border: 1px solid #2e3750;
       border-radius: 10px;
       padding: 7px 10px;
-      font-size: 12px;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: transform 0.1s ease, background 0.2s ease;
+      transition: transform 0.1s ease, background 0.2s ease, border-color 0.2s ease;
+      white-space: nowrap;
     }
 
     .btn-ctrl:active {
       transform: scale(0.95);
+    }
+
+    .btn-ctrl-pause {
+      background: rgba(245, 158, 11, 0.16);
+      color: var(--amber-light);
+      border-color: rgba(245, 158, 11, 0.45);
+      font-weight: 800;
+    }
+
+    .btn-ctrl-pause.paused {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border-color: rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-ctrl-stop {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border-color: rgba(239, 68, 68, 0.42);
+      font-weight: 800;
     }
 
     .btn-ctrl-primary {
@@ -287,6 +350,7 @@
       color: #090d16;
       border-color: var(--amber);
       font-weight: 800;
+      margin-left: auto;
     }
 
     /* Quick Action Bar */
@@ -495,11 +559,11 @@
   <div class="container">
     <!-- Sticky Video / Audio Player Stage -->
     <div class="sticky-player" id="stickyPlayer">
-      <div class="video-wrapper">
-        <!-- Placeholder sebelum lagu mula -->
+      <div class="video-wrapper" id="videoWrapper">
+        <!-- Placeholder sebelum lagu mula / selepas Stop -->
         <div class="placeholder-screen" id="placeholderScreen" onclick="playSong(0)">
           <div class="placeholder-play-btn">▶</div>
-          <p>Tekan sini atau pilih kad lagu di bawah. Semua 8 lagu bersambung automatik.</p>
+          <p id="placeholderText">Tekan sini atau pilih kad lagu di bawah. Semua 8 lagu bersambung automatik.</p>
         </div>
 
         <!-- Paparan Khas Mod Audio Sahaja (Jimat Data) -->
@@ -507,28 +571,39 @@
           <img id="audioCoverImg" class="audio-thumb" src="https://i.ytimg.com/vi/GVa7ooxwqj4/hqdefault.jpg" alt="Cover">
           <div class="audio-meta-box">
             <div class="audio-mode-pill">
-              <span class="eq-bars"><span></span><span></span><span></span></span>
-              MOD AUDIO • JIMAT DATA (144p)
+              <span class="eq-bars" id="eqBars"><span></span><span></span><span></span></span>
+              <span id="audioModeLabel">MOD AUDIO • JIMAT DATA (144p)</span>
             </div>
             <div class="audio-song-title" id="audioSongTitle">Satu Jiwa Senawang</div>
             <div class="audio-song-desc" id="audioSongDesc">Semangat berpasukan & kerjasama harian</div>
           </div>
         </div>
 
-        <!-- YouTube Player IFrame -->
+        <!-- YouTube Player Container -->
         <div id="yt-player"></div>
       </div>
 
+      <!-- Bar Bantuan Jika Skrin Hitam / Sekatan Autoplay -->
+      <div class="yt-fallback-bar" id="ytFallbackBar">
+        <span id="ytFallbackText">Jika skrin hitam, tekan ▶ pada video atau buka terus:</span>
+        <a id="ytDirectLink" href="https://www.youtube.com/watch?v=GVa7ooxwqj4" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
+      </div>
+
       <div class="now-playing-bar">
-        <div class="now-playing-info">
-          <div class="now-playing-label">
-            <span id="npLabel">SEDIA DIMAINKAN</span>
-            <span class="auto-badge">AUTO-NEXT</span>
+        <div class="now-playing-top">
+          <div class="now-playing-info">
+            <div class="now-playing-label">
+              <span id="npLabel">SEDIA DIMAINKAN</span>
+              <span class="auto-badge" id="autoBadge">AUTO-NEXT</span>
+            </div>
+            <div class="now-playing-title" id="npTitle">Keharmonian Logistics Senawang</div>
           </div>
-          <div class="now-playing-title" id="npTitle">Keharmonian Logistics Senawang</div>
         </div>
+
         <div class="player-controls">
           <button class="btn-ctrl" onclick="playPrev()" title="Lagu Sebelumnya">⏮</button>
+          <button class="btn-ctrl btn-ctrl-pause" id="btnPause" onclick="togglePause()" title="Pause / Sambung">⏸ Pause</button>
+          <button class="btn-ctrl btn-ctrl-stop" id="btnStop" onclick="stopPlayer()" title="Hentikan Lagu">⏹ Stop</button>
           <button class="btn-ctrl btn-ctrl-primary" onclick="playNext()" title="Lagu Seterusnya">Seterusnya ⏭</button>
         </div>
       </div>
@@ -550,7 +625,7 @@
     <!-- Section Header -->
     <div class="section-header">
       <h2>8 Pilihan Istimewa • Team Senawang</h2>
-      <span>LaguLog V1.6</span>
+      <span>LaguLog V1.8</span>
     </div>
 
     <!-- Visual Card Tracklist -->
@@ -558,13 +633,11 @@
 
     <!-- Footer -->
     <div class="footer">
-      <strong>LaguLog V1.6</strong> • Created by <strong>myfarline AI</strong><br>
+      <strong>LaguLog V1.8</strong> • Created by <strong>myfarline AI</strong><br>
       Dedikasi khas buat En. Ahmad, Kak Aisha, Zu'ma, Roslee, Zaidi &amp; seluruh keluarga Logistics Solmax Senawang.
     </div>
   </div>
 
-  <!-- YouTube IFrame Player API -->
-  <script src="https://www.youtube.com/iframe_api"></script>
   <script>
     const SONGS = [
       {
@@ -627,32 +700,104 @@
 
     let currentIndex = -1;
     let player = null;
-    let isApiReady = false;
-    let pendingIndex = null;
+    let isPlayerReady = false;
     let isAudioOnly = false;
+    let isPaused = false;
+    let isStopped = false;
+    let fallbackTimer = null;
 
     function getThumbUrl(videoId) {
       return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
     }
 
-    function onYouTubeIframeAPIReady() {
-      isApiReady = true;
-      if (pendingIndex !== null) {
-        const idx = pendingIndex;
-        pendingIndex = null;
-        playSong(idx);
-      }
-    }
-
     function applyPlaybackQuality() {
-      if (!player) return;
+      if (!player || !isPlayerReady) return;
       try {
         if (isAudioOnly && typeof player.setPlaybackQuality === "function") {
-          player.setPlaybackQuality("tiny"); // 144p paling jimat data
+          player.setPlaybackQuality("tiny");
         } else if (!isAudioOnly && typeof player.setPlaybackQuality === "function") {
           player.setPlaybackQuality("default");
         }
       } catch (e) {}
+    }
+
+    function syncPauseButtonUI(paused) {
+      isPaused = paused;
+      const btnPause = document.getElementById("btnPause");
+      const eqBars = document.getElementById("eqBars");
+      const audioModeLabel = document.getElementById("audioModeLabel");
+
+      if (paused) {
+        btnPause.textContent = "▶ Sambung";
+        btnPause.classList.add("paused");
+        if (eqBars) eqBars.classList.add("paused");
+        if (audioModeLabel && isAudioOnly) audioModeLabel.textContent = "MOD AUDIO • DIJEDA (PAUSE)";
+      } else {
+        btnPause.textContent = "⏸ Pause";
+        btnPause.classList.remove("paused");
+        if (eqBars) eqBars.classList.remove("paused");
+        if (audioModeLabel && isAudioOnly) audioModeLabel.textContent = "MOD AUDIO • JIMAT DATA (144p)";
+      }
+    }
+
+    function togglePause() {
+      if (currentIndex < 0 || isStopped) return;
+
+      const iframe = document.querySelector("#videoWrapper iframe");
+
+      if (!isPaused) {
+        // Jeda lagu (Pause)
+        if (player && isPlayerReady && typeof player.pauseVideo === "function") {
+          player.pauseVideo();
+        } else if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "pauseVideo", args: [] }), "*");
+        }
+        syncPauseButtonUI(true);
+        document.getElementById("npLabel").textContent = `DIJEDA • TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+      } else {
+        // Sambung semula lagu (Resume)
+        if (player && isPlayerReady && typeof player.playVideo === "function") {
+          player.playVideo();
+        } else if (iframe && iframe.contentWindow) {
+          iframe.contentWindow.postMessage(JSON.stringify({ event: "command", func: "playVideo", args: [] }), "*");
+        }
+        syncPauseButtonUI(false);
+        document.getElementById("npLabel").textContent = `TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+      }
+    }
+
+    function stopPlayer() {
+      clearTimeout(fallbackTimer);
+      isStopped = true;
+      syncPauseButtonUI(false);
+
+      if (player && isPlayerReady && typeof player.stopVideo === "function") {
+        try {
+          player.stopVideo();
+        } catch (e) {}
+      }
+
+      const iframe = document.querySelector("#videoWrapper iframe");
+      if (iframe) {
+        iframe.src = "about:blank";
+      }
+
+      currentIndex = -1;
+      document.getElementById("npLabel").textContent = "DIHENTIKAN (STOP)";
+      document.getElementById("npTitle").textContent = "Keharmonian Logistics Senawang";
+      document.getElementById("ytFallbackBar").classList.remove("show");
+      document.getElementById("audioCoverStage").classList.remove("visible");
+
+      const placeholder = document.getElementById("placeholderScreen");
+      const placeholderText = document.getElementById("placeholderText");
+      if (placeholder) {
+        if (placeholderText) {
+          placeholderText.textContent = "Lagu dihentikan. Tekan sini atau pilih kad lagu untuk mula semula.";
+        }
+        placeholder.style.display = "flex";
+      }
+
+      renderTracklist();
     }
 
     function toggleAudioMode() {
@@ -665,7 +810,7 @@
         stickyPlayer.classList.add("audio-only");
         btn.classList.add("active");
         btn.textContent = "🎧 Audio Sahaja: ON";
-        if (currentIndex >= 0) {
+        if (currentIndex >= 0 && !isStopped) {
           coverStage.classList.add("visible");
         }
       } else {
@@ -684,14 +829,16 @@
       listEl.innerHTML = "";
 
       SONGS.forEach((song, index) => {
-        const isActive = index === currentIndex;
+        const isActive = index === currentIndex && !isStopped;
         const card = document.createElement("div");
         card.className = "visual-card" + (isActive ? " active" : "");
         card.id = `track-card-${index}`;
         card.onclick = () => playSong(index);
 
         const idleLabel = isAudioOnly ? "🎧 Dengar" : "▶ Tonton";
-        const activeLabel = isAudioOnly ? "🎧 Sedang Dimainkan" : "▶ Sedang Dipilih";
+        const activeLabel = isPaused
+          ? "⏸ Dijeda"
+          : (isAudioOnly ? "🎧 Sedang Dimainkan" : "▶ Sedang Dipilih");
 
         card.innerHTML = `
           <div class="card-thumb-box">
@@ -716,10 +863,12 @@
       document.getElementById("npLabel").textContent = `TREK 0${song.id} / 0${SONGS.length}`;
       document.getElementById("npTitle").textContent = song.title;
 
-      // Kemas kini paparan mod audio
       document.getElementById("audioCoverImg").src = getThumbUrl(song.youtubeId);
       document.getElementById("audioSongTitle").textContent = song.title;
       document.getElementById("audioSongDesc").textContent = song.desc;
+
+      const directLink = document.getElementById("ytDirectLink");
+      directLink.href = `https://www.youtube.com/watch?v=${song.youtubeId}`;
 
       const coverStage = document.getElementById("audioCoverStage");
       if (isAudioOnly) {
@@ -731,8 +880,98 @@
       renderTracklist();
     }
 
+    function startFallbackTimer() {
+      clearTimeout(fallbackTimer);
+      const fallbackBar = document.getElementById("ytFallbackBar");
+      fallbackBar.classList.remove("show");
+
+      fallbackTimer = setTimeout(() => {
+        fallbackBar.classList.add("show");
+      }, 4000);
+    }
+
+    function loadDirectIframeFallback(videoId, title) {
+      const existingFrame = document.getElementById("yt-player");
+      if (existingFrame) {
+        existingFrame.outerHTML = `
+          <iframe id="yt-player"
+            src="https://www.youtube.com/embed/${videoId}?autoplay=1&playsinline=1&rel=0&enablejsapi=1"
+            title="${title}"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen>
+          </iframe>
+        `;
+      }
+      document.getElementById("ytFallbackBar").classList.add("show");
+    }
+
+    function createYouTubePlayer(song) {
+      player = new YT.Player("yt-player", {
+        height: "100%",
+        width: "100%",
+        videoId: song.youtubeId,
+        host: "https://www.youtube.com",
+        playerVars: {
+          autoplay: 1,
+          playsinline: 1,
+          rel: 0,
+          modestbranding: 1,
+          enablejsapi: 1,
+          origin: window.location.origin
+        },
+        events: {
+          onReady: function (event) {
+            isPlayerReady = true;
+            applyPlaybackQuality();
+            if (typeof event.target.unMute === "function") {
+              event.target.unMute();
+            }
+            if (typeof event.target.setVolume === "function") {
+              event.target.setVolume(100);
+            }
+            event.target.playVideo();
+          },
+          onStateChange: function (event) {
+            if (isStopped) return;
+            if (event.data === YT.PlayerState.PLAYING) {
+              clearTimeout(fallbackTimer);
+              document.getElementById("ytFallbackBar").classList.remove("show");
+              syncPauseButtonUI(false);
+              if (currentIndex >= 0) {
+                document.getElementById("npLabel").textContent = `TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+              }
+              if (typeof event.target.unMute === "function") {
+                event.target.unMute();
+              }
+              applyPlaybackQuality();
+            } else if (event.data === YT.PlayerState.PAUSED) {
+              syncPauseButtonUI(true);
+              if (currentIndex >= 0) {
+                document.getElementById("npLabel").textContent = `DIJEDA • TREK 0${SONGS[currentIndex].id} / 0${SONGS.length}`;
+              }
+            } else if (event.data === YT.PlayerState.ENDED) {
+              const nextIdx = (currentIndex + 1) % SONGS.length;
+              playSong(nextIdx);
+            }
+          },
+          onError: function (event) {
+            const fallbackText = document.getElementById("ytFallbackText");
+            if (event && (event.data === 101 || event.data === 150)) {
+              fallbackText.textContent = "Video ini dihadkan oleh YouTube untuk embed. Buka di YouTube:";
+            } else {
+              fallbackText.textContent = "Ralat memuatkan video. Cuba buka terus di YouTube:";
+            }
+            document.getElementById("ytFallbackBar").classList.add("show");
+          }
+        }
+      });
+    }
+
     function playSong(index) {
       if (index < 0 || index >= SONGS.length) return;
+
+      isStopped = false;
+      syncPauseButtonUI(false);
 
       const placeholder = document.getElementById("placeholderScreen");
       if (placeholder) {
@@ -742,48 +981,23 @@
       currentIndex = index;
       const song = SONGS[index];
       updateNowPlayingUI(index);
+      startFallbackTimer();
 
-      if (!isApiReady || typeof YT === "undefined" || !YT.Player) {
-        pendingIndex = index;
-        return;
-      }
-
-      if (!player) {
-        player = new YT.Player("yt-player", {
-          videoId: song.youtubeId,
-          playerVars: {
-            autoplay: 1,
-            playsinline: 1,
-            rel: 0,
-            modestbranding: 1
-          },
-          events: {
-            onReady: function (event) {
-              applyPlaybackQuality();
-              event.target.playVideo();
-            },
-            onStateChange: function (event) {
-              if (event.data === YT.PlayerState.PLAYING) {
-                applyPlaybackQuality();
-              }
-              if (event.data === YT.PlayerState.ENDED) {
-                const nextIdx = (currentIndex + 1) % SONGS.length;
-                playSong(nextIdx);
-              }
-            },
-            onError: function () {
-              setTimeout(() => {
-                const nextIdx = (currentIndex + 1) % SONGS.length;
-                playSong(nextIdx);
-              }, 2000);
-            }
-          }
-        });
-      } else if (typeof player.loadVideoById === "function") {
-        player.loadVideoById({
-          videoId: song.youtubeId,
-          suggestedQuality: isAudioOnly ? "tiny" : "default"
-        });
+      if (typeof YT !== "undefined" && typeof YT.Player === "function") {
+        if (!player) {
+          createYouTubePlayer(song);
+        } else if (isPlayerReady && typeof player.loadVideoById === "function") {
+          player.loadVideoById({
+            videoId: song.youtubeId,
+            suggestedQuality: isAudioOnly ? "tiny" : "default"
+          });
+          if (typeof player.unMute === "function") player.unMute();
+          if (typeof player.playVideo === "function") player.playVideo();
+        } else {
+          loadDirectIframeFallback(song.youtubeId, song.title);
+        }
+      } else {
+        loadDirectIframeFallback(song.youtubeId, song.title);
       }
     }
 
@@ -807,6 +1021,13 @@
       const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
       window.open(waUrl, "_blank");
     }
+
+    (function loadYTScript() {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    })();
 
     renderTracklist();
   </script>
